@@ -268,7 +268,62 @@ compressionTest(:,:,3) = compTestDST * compressionTest(:,:,3) * compTestDST;
 
 %-------------------------------------------------------------
 
-%Question 13 begin
+%Question 13/14 begin
+
+compressImage = double(imread("Turkey.jpg"));
+
+[h, w, c] = size(compressImage);
+
+dst = createDST(h);
+
+compressImage(:,:,1) = dst * compressImage(:,:,1) * dst;
+compressImage(:,:,2) = dst * compressImage(:,:,2) * dst;
+compressImage(:,:,3) = dst * compressImage(:,:,3) * dst;
+
+%Drops 'p'% of the compressed data
+p = 0.5;
+
+redChannel = compressImage(:,:,1);
+greenChannel = compressImage(:,:,2);
+blueChannel = compressImage(:,:,3);
+for i = 1:h
+    for j = 1:h
+        if (i+j > p*2*h)
+            redChannel(i,j) = 0; %Compresses red, blue, and green channels
+            greenChannel(i,j) = 0;
+            blueChannel(i,j) = 0;
+        end
+    end
+end
+
+%For question 14
+tracker = 0; %This nested for-loop counts the number of non-zero entries within the transformed matrix 
+for i = 1:h 
+    for j = 1:h
+        if(redChannel(i, j) ~= 0)
+            tracker = tracker + 1;
+        end
+    end
+end
+
+%Displays number of non-zero entries
+%disp(tracker) 
+
+compressImage(:,:,1) = redChannel; %Assigns compressed channels to original image
+compressImage(:,:,2) = greenChannel;
+compressImage(:,:,3) = blueChannel;
+
+compressImage(:,:,1) = dst * compressImage(:,:,1) * dst; %Decompresses image
+compressImage(:,:,2) = dst * compressImage(:,:,2) * dst;
+compressImage(:,:,3) = dst * compressImage(:,:,3) * dst;
+
+%imagesc(uint8(compressImage))
+
+%Question 13/14 end
+
+%-------------------------------------------------------------
+
+%Question 15 begin
 
 compressImage = double(imread("Turkey.jpg"));
 
@@ -286,27 +341,46 @@ p = 0.1;
 redChannel = compressImage(:,:,1);
 greenChannel = compressImage(:,:,2);
 blueChannel = compressImage(:,:,3);
+
+uncompressedImageSize = 0; %This variable holds the size of the uncompressed image
+
+uncompressedMatrix = compressImage(:,:,1); %This matrix will be used to find the uncompressed image size
+for i = 1:h 
+    for j = 1:h
+        if(uncompressedMatrix(i, j) ~= 0)
+            uncompressedImageSize = uncompressedImageSize + 1;
+        end
+    end
+end
+
 for i = 1:h
     for j = 1:h
         if (i+j > p*2*h)
-            redChannel(i,j) = 0;
+            redChannel(i,j) = 0; %Compresses red, blue, and green channels
             greenChannel(i,j) = 0;
             blueChannel(i,j) = 0;
         end
     end
 end
 
-compressImage(:,:,1) = redChannel;
-compressImage(:,:,2) = greenChannel;
-compressImage(:,:,3) = blueChannel;
+tracker = 0; %This nested for-loop counts the number of non-zero entries within the transformed matrix 
+for i = 1:h 
+    for j = 1:h
+        if(redChannel(i, j) ~= 0)
+            tracker = tracker + 1;
+        end
+    end
+end
 
-compressImage(:,:,1) = dst * compressImage(:,:,1) * dst;
-compressImage(:,:,2) = dst * compressImage(:,:,2) * dst;
-compressImage(:,:,3) = dst * compressImage(:,:,3) * dst;
+compressionRatio = uncompressedImageSize / tracker;
 
-imagesc(uint8(compressImage))
+%disp(compressionRatio)
 
-%Question 13 end
+%Compression Ratio for p = 0.5: 2.0020
+%Compression Ratio for p = 0.3: 5.5719
+%Compression Ratio for p = 0.1: 50.6412
+
+%Question 15 end
 
 %-------------------------------------------------------------
 
